@@ -114,11 +114,11 @@ def nueva_inscripcion():
 
     # En caso de GET
     estudiantes = conn.execute(
-        """
-        SELECT id, concat(nombre, ' ', apellidos) as nombre
-        FROM estudiantes
-        """
-    ).fetchall()
+    """
+    SELECT id, nombre || ' ' || apellidos as nombre
+    FROM estudiantes
+    """
+).fetchall()
     cursos = conn.execute(
         """
         SELECT id, descripcion FROM cursos
