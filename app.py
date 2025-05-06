@@ -23,7 +23,60 @@ def estudiantes():
     estudiantes = conn.execute("SELECT * FROM estudiantes").fetchall()
     conn.close()
     return render_template("estudiantes.html",estudiantes = estudiantes)
+ 
+#nuevo  estudiante 
+@app.route("/estudiante/nuevo", methods=['GET', 'POST'])
+def nuevo_estudiante():
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        apellidos = request.form['apellidos']
+        fecha_nacimiento = request.form['fecha_nacimiento']
 
+        conn = get_db_connection()
+        conn.execute(
+            "INSERT INTO estudiantes (nombre, apellidos, fecha_nacimiento) VALUES (?, ?, ?)",
+            (nombre, apellidos, fecha_nacimiento)
+        )
+        conn.commit()
+        conn.close()
+        flash("Estudiante agregado correctamente", "success")
+        return redirect(url_for("estudiantes"))
+
+    return render_template("form_estudiante.html")
+
+#editar estudiante
+
+@app.route("/estudiante/editar/<int:id>", methods=['GET', 'POST'])
+def editar_estudiante(id):
+    conn = get_db_connection()
+    estudiante = conn.execute("SELECT * FROM estudiantes WHERE id = ?", (id,)).fetchone()
+
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        apellidos = request.form['apellidos']
+        fecha_nacimiento = request.form['fecha_nacimiento']
+
+        conn.execute(
+            "UPDATE estudiantes SET nombre = ?, apellidos = ?, fecha_nacimiento = ? WHERE id = ?",
+            (nombre, apellidos, fecha_nacimiento, id)
+        )
+        conn.commit()
+        conn.close()
+        flash("Estudiante actualizado correctamente", "success")
+        return redirect(url_for("estudiantes"))
+
+    conn.close()
+    return render_template("form_estudiante.html", estudiante=estudiante)
+
+#eliminar estudiante
+@app.route("/estudiante/eliminar/<int:id>")
+def eliminar_estudiante(id):
+    conn = get_db_connection()
+    conn.execute("DELETE FROM estudiantes WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+    flash("Estudiante eliminado correctamente", "success")
+    return redirect(url_for("estudiantes"))
 #listado de curso
 @app.route("/cursos")
 def cursos():
