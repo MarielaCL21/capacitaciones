@@ -127,6 +127,49 @@ def nueva_inscripcion():
     conn.close()
     return render_template('form_inscripcion.html', estudiantes=estudiantes, cursos=cursos)
 
+#editar inscripción 
+@app.route("/inscripcion/editar/<int:id>", methods=['GET', 'POST'])
+def editar_inscripcion(id):
+    conn = get_db_connection()
+    if request.method == 'POST':
+        fecha = request.form['fecha']
+        estudiante_id = request.form['estudiante_id']
+        curso_id = request.form['curso_id']
+
+        conn.execute(
+            """
+            UPDATE inscripciones 
+            SET fecha = ?, estudiante_id = ?, curso_id = ?
+            WHERE id = ?
+            """,
+            (fecha, estudiante_id, curso_id, id)
+        )
+        conn.commit()
+        conn.close()
+        flash("Inscripción actualizada correctamente", "success")
+        return redirect(url_for("inscripciones"))
+
+    # Cargar datos existentes
+    inscripcion = conn.execute(
+        "SELECT * FROM inscripciones WHERE id = ?", (id,)
+    ).fetchone()
+
+    estudiantes = conn.execute(
+        "SELECT id, nombre || ' ' || apellidos as nombre FROM estudiantes"
+    ).fetchall()
+
+    cursos = conn.execute(
+        "SELECT id, descripcion FROM cursos"
+    ).fetchall()
+    
+    conn.close()
+    return render_template(
+        'form_inscripcion.html',
+        estudiantes=estudiantes,
+        cursos=cursos,
+        inscripcion=inscripcion
+    )
+
 #eliminar inscripcion
 @app.route('/inscripcion/eliminar/<int:id>')
 def eliminar_inscripcion(id):
